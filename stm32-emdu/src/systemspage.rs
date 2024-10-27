@@ -5,7 +5,7 @@ use stm32f4xx_hal::gpio::{Pin};
 
 
 
-pub fn systemspage<const P: char, const N: u8>(but: &Pin<P, N>, volt: f64,data: [u8; 32]) -> bool{
+pub fn systemspage<const P: char, const N: u8>(but: &Pin<P, N>,data: &[u8; 32]){
     let messages: [&str; 7 ] = [
     "EGT",
     "Cylinder 1",
@@ -15,7 +15,9 @@ pub fn systemspage<const P: char, const N: u8>(but: &Pin<P, N>, volt: f64,data: 
     "Warning Lane",
     "Lane B",
 ];
- while !but.is_low() {
+
+ rprintln!("You are on the Systems Page!!!");
+ if !but.is_low() {
     rprintln!(" ID | Data               | Description                          ");
     rprintln!("----|--------------------|-------------------------------------");
     for i in 0..7 {
@@ -23,5 +25,5 @@ pub fn systemspage<const P: char, const N: u8>(but: &Pin<P, N>, volt: f64,data: 
         rprintln!("----|--------------------|-------------------------------------");
     }
 }
-true
+    
 }

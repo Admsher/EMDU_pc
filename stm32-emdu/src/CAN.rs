@@ -90,8 +90,8 @@ pub fn CAN()-> [u8;32] {
         // rprintln!("Runaway");
         let receive=block!(can.receive()).unwrap();
         let equal = match receive.id() {
-                Standard(s) => s.as_raw() as u16 == 0x121212,
-                Extended(e) => e.as_raw() as u32 == 0x121212  as u32, // note that extended Id is 32-bit
+                Standard(s) => s.as_raw() as u16 == 0x500,
+                Extended(e) => e.as_raw() as u32 == 0x500  as u32, // note that extended Id is 32-bit
             };
         if equal{
             for i in 0..receive.data().unwrap().len(){

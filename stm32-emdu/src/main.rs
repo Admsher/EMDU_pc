@@ -3,7 +3,6 @@
 
 
 use cortex_m_rt::entry;
-use homepage::homepage;
 use panic_halt as _;
 use stm32f4xx_hal::{
     can::Can,
@@ -19,19 +18,23 @@ use rtt_target::{rprintln, rtt_init_print};
 use nb::block;
 use bxcan::Id::{Extended,Standard};
 use libm::log;
-
+use nb::Error; 
 mod infopage;
 mod systemspage;
 mod homepage;
-mod CAN;
-mod Analog;
-mod Digital;
+use cortex_m::asm::delay;
+// mod CAN;
+// mod Analog;
+// mod Digital;
+use defmt::{debug, info, error};
+
+
 
 #[entry]
 fn main() -> ! {
     let mut data: [u8;32] = [0;32];
     let mut page = 0;
-    rprintln!("Transitioning to info page...");
+
     let dp = pac::Peripherals::take().unwrap();
     let gpioa = dp.GPIOA.split();
     let temperature_pin = gpioa.pa0.into_analog();
@@ -60,27 +63,27 @@ fn main() -> ! {
 
     let mut can = can1;
    
-    let gpioa = dp.GPIOA.split();
-    let temperature_pin = gpioa.pa0.into_analog();
+    // let gpioa = dp.GPIOA.split();
+    // let temperature_pin = gpioa.pa0.into_analog();
 
-    let mut adc = Adc::adc1(dp.ADC1, true, AdcConfig::default());
+    // let mut adc = Adc::adc1(dp.ADC1, true, AdcConfig::default());
 
-    let clocks = rcc.cfgr.use_hse(8.MHz()).freeze();
+    // let clocks = rcc.cfgr.use_hse(8.MHz()).freeze();
   
    
-    let tx_pin = gpioa.pa2.into_alternate();
+    // let tx_pin = gpioa.pa2.into_alternate();
 
-    let mut tx = dp
-        .USART2
-        .tx(
-            tx_pin,
-            Config::default()
-                .baudrate(115200.bps())
-                .wordlength_8()
-                .parity_none(),
-            &clocks,
-        )
-        .unwrap();
+    // let mut tx = dp
+    //     .USART2
+    //     .tx(
+    //         tx_pin,
+    //         Config::default()
+    //             .baudrate(115200.bps())
+    //             .wordlength_8()
+    //             .parity_none(),
+    //         &clocks,
+    //     )
+    //     .unwrap();
 
     static R0: f64 = 100000.0;
     static B: f64 = 4275.0; 
@@ -90,70 +93,63 @@ fn main() -> ! {
     loop {
         let sample = adc.convert(&temperature_pin, SampleTime::Cycles_480);
 
-   
+        delay(50000);
         let  volt: f64 = sample as f64/4094 as f64 *3.00;
-  
+
+ 
+   
+
 
         let receive=block!(can.receive()).unwrap();
+
         let equal = match receive.id() {
-                Standard(s) => s.as_raw() as u16 == 0x121212,
-                Extended(e) => e.as_raw() as u32 == 0x121212  as u32, // note that extended Id is 32-bit
+                Standard(s) => s.as_raw() as u16 == 0x500,
+                Extended(e) => e.as_raw() as u32 == 0x500  as u32, // note that extended Id is 32-bit
             };
+          
         if equal{
             for i in 0..receive.data().unwrap().len(){
-                data[i] = *receive.data().unwrap().index(i);
+                data[i] = *receive.data().unwrap().get(i).unwrap();
                 
+
             }
         }
-
+     
         
       if page == 0 {
         if button2.is_low() {
             page = 2; 
-            rprintln!("Transitioning to info page...");
-            match can.receive() {
-                Ok(receive) => {
+            rprintln!("Info page");
                   
                     wait_for_release(&button2);
-                    infopage::infopage(&button2, data);
-                
-                }
-                Err(err) => {
-                    rprintln!("Error receiving CAN message: {:?}", err);
-                }
-              }
-           
+                    infopage::infopage(&button2, &data);
          
         }
         else if button1.is_low() {
-            page = 2; 
-            rprintln!("Transitioning to systems page...");
-            match can.receive() {
-                Ok(receive) => {
+            page = 1; 
+            rprintln!("Systems page");
+        
                     wait_for_release(&button1);
-                    systemspage::systemspage(&button1, volt,data);
-                }
-                Err(err) => {
-                    rprintln!("Error receiving CAN message: {:?}", err);
-                }
-              }
-           
+                    systemspage::systemspage(&button1, &data);
          
         }
     }
      else if page == 1 {
           if backbutton.is_low() {
+            wait_for_release(&backbutton);
               page = 0; 
               rprintln!("Returning to home page...");
-              wait_for_release(&backbutton);
-              homepage(&backbutton, data);
+      
+              homepage::homepage(&backbutton, &data);
           }
       } else if page == 2 {
           if backbutton.is_low() {
+            wait_for_release(&backbutton);
+            
               page = 0; 
               rprintln!("Returning to home page...");
-              wait_for_release(&backbutton);
-              homepage(&backbutton, data);
+            
+              homepage::homepage(&backbutton, &data);
           }
       }
        
@@ -165,3 +161,4 @@ fn wait_for_release<const P: char, const N: u8>(but: &Pin<P, N>) {
         // Do nothing, just wait
     }
 }
+

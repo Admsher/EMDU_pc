@@ -1,40 +1,51 @@
-            [package]
-            name = "stm32-example"
-            version = "0.1.0"
-            authors = ["asdgs"]
-            edition = "2021"
+[package]
+name = "stm32-example"
+version = "0.1.0"
+authors = ["asdgs"]
+edition = "2021"
 
-            [dependencies]
-            cortex-m = "0.7"
-            cortex-m-rt = "0.7"
-            panic-probe = { version = "0.3.1", features = ["defmt"] }
-            panic-halt = "0.2.0"
-            rtt-target = "0.5.0"
-            embedded-time = "0.12.1"
-            libm = "0.2.8"
-            embedded-timers = "0.3.0"
-            embedded-hal = "1.0.0"
-            debouncr = "0.2.2"
-            nb = "1"
-            bxcan = "0.7.0"
+[dependencies]
+cortex-m = "0.7"
+cortex-m-rt = "0.7"
+panic-halt = "0.2.0"
+rtt-target = "0.5.0"
+embedded-time = "0.12.1"
+libm = "0.2.8"
+embedded-timers = "0.3.0"
+embedded-hal = "1.0.0"
+debouncr = "0.2.2"
+nb = "1"
+bxcan = "0.7.0"
+stm32f4xx-hal = { version = "0.22.0", features = ["stm32f407", "defmt", "can"] }
+defmt = "0.3"
+defmt-test = "0.3.2"
+
+[dev-dependencies]
+defmt = "0.3"
+defmt-test = "0.3.2"
+panic-probe = { version = "0.3.1", features = ["defmt"] }
+panic-halt = "0.2.0"
+
+[profile.dev]
+panic = "abort"
+opt-level = "s"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+incremental = false
+debug = true
+lto = true
+opt-level = "s"
+
+[lib]
+harness = false
+
+[[test]]
+name = "test-name"
+harness = false
 
 
-
-            [dependencies.stm32f4xx-hal]
-            version = "0.22.0"
-            features = ["stm32f407", "defmt","can"]
-
-            # Set the default for dependencies.
-            [profile.dev.package."*"]
-            opt-level = "s"
-
-            [profile.release]
-            codegen-units = 1
-            incremental = false
-            debug = true
-            lto = true
-            opt-level = "s"
-
-
-            [dev-dependencies]
-            panic-halt = "0.2.0"
+#[[bin]] # <- add this section
+#name = "main" # src/main.rs
+#test = false

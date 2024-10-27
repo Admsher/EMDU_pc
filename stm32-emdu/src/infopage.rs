@@ -2,7 +2,7 @@ use bxcan::Frame;
 use rtt_target::rprintln;
 use stm32f4xx_hal::gpio::{Pin};
 
-pub fn infopage<const P: char, const N: u8>(but: &Pin<P, N>, data: [u8; 32]) -> bool {
+pub fn infopage<const P: char, const N: u8>(but: &Pin<P, N>, data: &[u8; 32]){
     let info_page: [&str; 17] = [
     "RPM",
     "Throttle",
@@ -24,7 +24,7 @@ pub fn infopage<const P: char, const N: u8>(but: &Pin<P, N>, data: [u8; 32]) -> 
 ];
 
     
-    while !but.is_low() {
+    if !but.is_low() {
         
         rprintln!("You are on the info page!!!");
         rprintln!(" ID | Data               | Description                          ");
@@ -37,5 +37,7 @@ pub fn infopage<const P: char, const N: u8>(but: &Pin<P, N>, data: [u8; 32]) -> 
         }
        
     }
-    true
+    if but.is_low(){
+        return;
+    }   
 }

@@ -56,7 +56,7 @@ pub fn button() -> ! {
 
 
 
-    rtt_init_print!();
+
 
     loop {
         let sample = adc.convert(&temperature_pin, SampleTime::Cycles_480);

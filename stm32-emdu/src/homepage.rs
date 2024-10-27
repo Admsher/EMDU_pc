@@ -1,7 +1,8 @@
 use rtt_target::rprintln;
 use stm32f4xx_hal::gpio::{Pin};
+use cortex_m::asm::delay;
 
-pub fn homepage<const P: char, const N: u8>(but: &Pin<P, N>,data:[u8;32]) -> bool {
+pub fn homepage<const P: char, const N: u8>(but: &Pin<P, N>, data: &[u8; 32]) -> bool {
     let homepage: [&str; 9] = [
         "Oil Temperature",
         "Oil Pressure",
@@ -14,16 +15,24 @@ pub fn homepage<const P: char, const N: u8>(but: &Pin<P, N>,data:[u8;32]) -> boo
         "Manifold Pressure",
     ];
 
-    while !but.is_low() {
-        rprintln!("You are on the homepage!!!");
-        rprintln!(" ID | Data               | Description                          ");
+    // Display the homepage data once
+    rprintln!("You are on the homepage!!!");
+    
+    if but.is_high(){
+    rprintln!(" ID | Data               | Description                          ");
+    rprintln!("----|--------------------|-------------------------------------");
+    
+    for i in 0..8 {
+        rprintln!(" {:?} | {:?} | ", homepage[i], data[i]);
         rprintln!("----|--------------------|-------------------------------------");
-
-        for i in 0..9 {
-            rprintln!(" {:?} | {:?} | ", homepage[i], data[i]);
-            rprintln!("----|--------------------|-------------------------------------");
-        }
     }
-
+    delay(50);
+    }
+    if but.is_low(){
+        return true;
+    }
     true
+
 }
+
+
