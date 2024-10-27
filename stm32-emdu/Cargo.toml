@@ -40,11 +40,14 @@ opt-level = "s"
 
 [lib]
 harness = false
+test=true
 
 [[test]]
 name = "test-name"
 harness = false
-
+[[bin]]
+name = "interrupts"
+path = "src/interrupts.rs"
 
 #[[bin]] # <- add this section
 #name = "main" # src/main.rs

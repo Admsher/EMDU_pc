@@ -27,7 +27,7 @@ use cortex_m::asm::delay;
 // mod Analog;
 // mod Digital;
 use defmt::{debug, info, error};
-
+mod test;
 
 
 #[entry]
